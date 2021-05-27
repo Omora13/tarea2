@@ -93,3 +93,6 @@ summary(inp.lm)
 
 plot(inp.lm, col= "blue")
 ```
+### .
+
+
