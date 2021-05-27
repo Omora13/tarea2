@@ -1,0 +1,95 @@
+---
+title: "Datos hidrologicos"
+output: html_document
+---
+## datos hidrologicos ejercicio explorativo
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#### se utiliza el comando **read.csv** para cargar los datos y así poder trabajarlos 
+
+```{r}
+inp <- read.csv("FDC.csv")
+```
+
+
+#### se visualiza el encabezado y las primeras cinco filas con los comando **head** y **dim** para tener mas claro como  se ven los datos
+
+```{r}
+ 
+head(inp)
+dim(inp)
+```
+
+#### grafico comparativo del rio banano y estrella del volumen del agua por tiempo 
+
+```{r}
+plot(inp[,2], type = "l", col="blue", xlab = 'fechas', ylab = 'volumeno de agua x tiempo')
+lines(inp[,3], col="green")
+
+```
+
+
+#### para conocer la estadistoca descriptiva de los datos utilizamos el comando **summary** , esto con el fin de ver como están distribuidos los datos correspondientes 
+
+```{r}
+summary(inp[,2:3])
+
+```
+
+#### histogramas para visualizar la estadistica descriptiva de los datos 
+
+```{r}
+hist(inp[,2], col="green",main= 'Río Estrella', xlab= 'clase', ylab = 'R.Estrella')
+hist(inp[,3], col="blue",main= 'Río Banano', xlab= 'clase', ylab = 'R.Banano')
+
+```
+
+#### se otorgan nombre a cada columna para facilitar la manipulación y se hace un grafico para probar el comando **attach**
+
+```{r}
+names(inp) <- c("fecha", "Estrella", "Banano")
+attach(inp)
+plot(Estrella, col="blue")
+```
+
+#### seguidamente se difine el formanto de las fechas, con el comando **striptime** para poder hacer en analisis más especifico
+
+```{r}
+tempdate <- strptime(inp[,1], format= "%d/%m/%Y")
+
+```
+
+#### se utiliza la función **tapply** para asignar el formato de la fecha y obterner pomedios anuales, mesuales o diarios. Ademas se realiza un comparación de datos anulaes entre ambos ríos 
+
+```{r}
+MAQ_Estrella <- tapply(Estrella, format(tempdate, format= "%Y"), FUN=sum)
+MAQ_Banano <- tapply(Banano, format(tempdate, format= "%Y"), FUN=sum)
+
+write.csv(rbind(MAQ_Estrella, MAQ_Banano), file="MAQ.csv")
+
+plot(MAQ_Banano, ylim=c(100,3000), main= 'comparación anual', xlab= 'año', ylab= 'R.Estrella' )
+lines(MAQ_Estrella, col=2)
+```
+
+#### se hace lo mismo que el paso anterior pero en esta vez en lugar de años vamos a usar los meses
+
+```{r}
+MMQ_Estrella <- tapply(Estrella, format(tempdate, format= "%m"), FUN=sum)
+MMQ_Banano <- tapply(Banano, format(tempdate, format= "%m"), FUN=sum)
+```
+
+### Analisis de correlación 
+
+#### utilizando el comando **spearman**, se realiza para saber si las cuencas tinen una relación cuantificable
+
+```{r}
+corinp <- cor (inp[,2:3] , method= "spearman")
+
+inp.lm <- lm(inp[,2] ~ inp[,3], data=inp)
+summary(inp.lm)
+
+plot(inp.lm, col= "blue")
+```
